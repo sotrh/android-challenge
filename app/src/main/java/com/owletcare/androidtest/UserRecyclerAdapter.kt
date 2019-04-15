@@ -42,7 +42,7 @@ class UserRecyclerAdapter(private val store: Store<State>): RecyclerView.Adapter
 
     inner class UserViewHolder(val view: View): RecyclerView.ViewHolder(view) {
         fun bind(user: User) {
-            // TODO Bind the user to the view
+            // TODO Bind the user to the view and allow the user to be deleted
         }
     }
 }

@@ -20,5 +20,5 @@ sealed class UsersAction: Action() {
         }
     }
 
-    // TODO Add Remove User FUnction
+    // TODO Add Remove User Action
 }
