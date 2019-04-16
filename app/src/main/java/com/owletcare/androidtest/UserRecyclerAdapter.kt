@@ -15,7 +15,7 @@ import com.owletcare.androidtest.redux.Store
  */
 class UserRecyclerAdapter(private val store: Store<State>): RecyclerView.Adapter<UserRecyclerAdapter.UserViewHolder>() {
 
-    val usersDisplayed: ArrayList<User> = arrayListOf()
+    private val usersDisplayed: ArrayList<User> = arrayListOf()
 
     val subscriber: (ArrayList<User>) -> Unit = { users ->
         // TODO update the displayed users

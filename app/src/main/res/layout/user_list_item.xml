@@ -22,6 +22,8 @@
             android:layout_height="wrap_content"/>
 
     <ImageView
+            android:id="@+id/user.delete"
+            android:background="?android:selectableItemBackgroundBorderless"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="12dp"
