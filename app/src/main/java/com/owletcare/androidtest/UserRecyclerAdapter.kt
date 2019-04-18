@@ -1,10 +1,14 @@
 package com.owletcare.androidtest
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.owletcare.androidtest.redux.Store
+import kotlinx.android.synthetic.main.user_list_item.view.*
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 /**
  * UserRecyclerAdapter.kt
@@ -16,9 +20,28 @@ import com.owletcare.androidtest.redux.Store
 class UserRecyclerAdapter(private val store: Store<State>): RecyclerView.Adapter<UserRecyclerAdapter.UserViewHolder>() {
 
     private val usersDisplayed: ArrayList<User> = arrayListOf()
+    private val positionsChanged: ArrayList<Int> = arrayListOf()
 
     val subscriber: (ArrayList<User>) -> Unit = { users ->
-        // TODO update the displayed users
+        positionsChanged.clear()
+        (users zip usersDisplayed).forEachIndexed { index, (newUser, oldUser) ->
+            if (newUser != oldUser)
+                positionsChanged.add(index)
+        }
+
+        val oldSize = usersDisplayed.size
+        val numUsersAdded = users.size - oldSize
+
+        usersDisplayed.clear()
+        usersDisplayed.addAll(users)
+
+        positionsChanged.forEach { notifyItemChanged(it) }
+
+        if (numUsersAdded > 0) {
+            notifyItemRangeInserted(oldSize, numUsersAdded)
+        } else if (numUsersAdded < 0) {
+            notifyItemRangeRemoved(oldSize, abs(numUsersAdded))
+        }
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -42,7 +65,9 @@ class UserRecyclerAdapter(private val store: Store<State>): RecyclerView.Adapter
 
     inner class UserViewHolder(val view: View): RecyclerView.ViewHolder(view) {
         fun bind(user: User) {
-            // TODO Bind the user to the view and allow the user to be deleted
+
+            view.user_name.text = user.name
+            view.user_profilePicture.setImageURI(Uri.parse(user.profilePicture))
         }
     }
 }

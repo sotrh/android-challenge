@@ -2,6 +2,7 @@ package com.owletcare.androidtest
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.owletcare.androidtest.redux.Action
 import com.owletcare.androidtest.redux.Store
 import kotlinx.android.synthetic.main.activity_main.*
@@ -28,9 +29,11 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         addUserButton.setOnClickListener {
-            store.dispatch(UsersAction.AddUser(randomName, randomProfilePicture))
+            val user = UsersAction.AddUser(randomName, randomProfilePicture)
+            store.dispatch(user)
         }
         mainRecyclerView.adapter = UserRecyclerAdapter(store)
+        mainRecyclerView.layoutManager = LinearLayoutManager(this)
     }
 
     private val randomName: String
