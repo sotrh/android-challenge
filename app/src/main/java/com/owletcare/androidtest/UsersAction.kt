@@ -1,5 +1,6 @@
 package com.owletcare.androidtest
 
+import android.util.Log
 import com.owletcare.androidtest.redux.Action
 
 /**
@@ -20,5 +21,11 @@ sealed class UsersAction: Action() {
         }
     }
 
-    // TODO Add Remove User Action
+    class RemoveUser(val user: User): UsersAction() {
+        override fun reduce(state: ArrayList<User>): ArrayList<User> {
+            state.remove(user)
+            return state
+        }
+    }
+
 }

@@ -2,19 +2,18 @@ package com.owletcare.androidtest
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.owletcare.androidtest.redux.Store
 import kotlinx.android.synthetic.main.user_list_item.view.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URL
-import kotlin.coroutines.CoroutineContext
-import kotlin.math.abs
 
 /**
  * UserRecyclerAdapter.kt
@@ -27,32 +26,15 @@ class UserRecyclerAdapter(private val store: Store<State>):
     RecyclerView.Adapter<UserRecyclerAdapter.UserViewHolder>(),
     CoroutineScope {
 
-    private val job = Job()
-    override val coroutineContext = Dispatchers.Main + job
+    override val coroutineContext = Dispatchers.Main
 
     private val usersDisplayed: ArrayList<User> = arrayListOf()
-    private val positionsChanged: ArrayList<Int> = arrayListOf()
 
     val subscriber: (ArrayList<User>) -> Unit = { users ->
-        positionsChanged.clear()
-        (users zip usersDisplayed).forEachIndexed { index, (newUser, oldUser) ->
-            if (newUser != oldUser)
-                positionsChanged.add(index)
-        }
-
-        val oldSize = usersDisplayed.size
-        val numUsersAdded = users.size - oldSize
-
         usersDisplayed.clear()
         usersDisplayed.addAll(users)
 
-        positionsChanged.forEach { notifyItemChanged(it) }
-
-        if (numUsersAdded > 0) {
-            notifyItemRangeInserted(oldSize, numUsersAdded)
-        } else if (numUsersAdded < 0) {
-            notifyItemRangeRemoved(oldSize, abs(numUsersAdded))
-        }
+        notifyDataSetChanged()
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -74,12 +56,17 @@ class UserRecyclerAdapter(private val store: Store<State>):
         holder.bind(usersDisplayed[position])
     }
 
-    inner class UserViewHolder(val view: View): RecyclerView.ViewHolder(view) {
+    inner class UserViewHolder(val view: View):
+        RecyclerView.ViewHolder(view) {
+
         fun bind(user: User) {
             launch {
                 view.user_name.text = user.name
                 view.user_profilePicture.setImageResource(R.drawable.ic_person_black_24dp)
                 view.user_profilePicture_progressBar.visibility = View.VISIBLE
+                view.user_delete.setOnClickListener {
+                    store.dispatch(UsersAction.RemoveUser(user))
+                }
 
                 val bitmapResult = withContext(Dispatchers.Default) {
                     try {
