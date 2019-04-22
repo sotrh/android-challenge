@@ -1,7 +1,6 @@
 package com.owletcare.androidtest
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,9 +10,8 @@ import com.owletcare.androidtest.redux.Store
 import kotlinx.android.synthetic.main.user_list_item.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.net.URL
 import kotlin.math.abs
 
 /**
@@ -23,9 +21,8 @@ import kotlin.math.abs
  * Created by kvanry on 4/15/19.
  * Copyright (c) 2019. Owlet Care. All rights reserved worldwide.
  */
-class UserRecyclerAdapter(private val store: Store<State>):
-    RecyclerView.Adapter<UserRecyclerAdapter.UserViewHolder>(),
-    CoroutineScope {
+class UserRecyclerAdapter(private val store: Store<State>, private val bitmapCache: BitmapCache):
+    RecyclerView.Adapter<UserRecyclerAdapter.UserViewHolder>(), CoroutineScope {
 
     override val coroutineContext = Dispatchers.Main
 
@@ -81,25 +78,16 @@ class UserRecyclerAdapter(private val store: Store<State>):
                     store.dispatch(UsersAction.RemoveUser(user))
                 }
 
-                val bitmapResult = withContext(Dispatchers.Default) {
-                    try {
-                        val url = URL(user.profilePicture)
-                        val connection = url.openConnection().apply {
-                            doInput = true
-                            connect()
-                        }
-                        val input = connection.getInputStream()
-
-                        Result.success(BitmapFactory.decodeStream(input))
-                    } catch(e: Throwable) {
-                        Result.failure<Bitmap>(e)
-                    }
+                val bitmapResult = try {
+                    Result.success(bitmapCache.getBitmapAsync(user.profilePicture).await())
+                } catch (t: Throwable) {
+                    Result.failure<Bitmap>(t)
                 }
 
                 if (bitmapResult.isFailure) {
                     Toast.makeText(
                         view.context,
-                        "Unable to process profile image url ${user.profilePicture}",
+                        view.resources.getString(R.string.error_profile_picture, user.profilePicture),
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {

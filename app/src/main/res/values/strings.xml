@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Owlet Buggy Android</string>
     <string name="add_user">Add New User</string>
+    <string name="error_profile_picture">Unable to process profile picture \"%1$s\"</string>
 </resources>

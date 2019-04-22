@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val store = Store(appReducer, State(arrayListOf()))
+    private val bitmapCache = BitmapCache((Runtime.getRuntime().maxMemory() / 1024 / 16).toInt())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,8 +33,14 @@ class MainActivity : AppCompatActivity() {
             val user = UsersAction.AddUser(randomName, randomProfilePicture)
             store.dispatch(user)
         }
-        mainRecyclerView.adapter = UserRecyclerAdapter(store)
+
+        mainRecyclerView.adapter = UserRecyclerAdapter(store, bitmapCache)
         mainRecyclerView.layoutManager = LinearLayoutManager(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        bitmapCache.cancelAllBitmapRequests()
     }
 
     private val randomName: String
@@ -46,13 +53,11 @@ class MainActivity : AppCompatActivity() {
         }
 
     private val randomProfilePicture: String
-        get() = when (Random.nextInt(7)) {
+        get() = when (Random.nextInt(5)) {
             0 -> "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
             1 -> "https://aboughina.files.wordpress.com/2015/12/portrait_photography_0131440.jpg"
             2 -> "https://cdnb.artstation.com/p/assets/images/images/001/863/575/large/irakli-nadar-artstation-da.jpg?1453903033"
             3 -> "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80"
-            4 -> "malformed_url"
-            5 -> "https://fake.com"
             else -> "https://vignette.wikia.nocookie.net/jamescameronsavatar/images/e/e6/Humansully.jpg/revision/latest?cb=20140829010952"
         }
 }
