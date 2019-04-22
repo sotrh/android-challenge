@@ -1,6 +1,5 @@
 package com.owletcare.androidtest
 
-import android.util.Log
 import com.owletcare.androidtest.redux.Action
 
 /**

@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
+import kotlin.math.abs
 
 /**
  * UserRecyclerAdapter.kt
@@ -29,12 +30,24 @@ class UserRecyclerAdapter(private val store: Store<State>):
     override val coroutineContext = Dispatchers.Main
 
     private val usersDisplayed: ArrayList<User> = arrayListOf()
+    private val userPositionsChanged: ArrayList<Int> = arrayListOf()
 
     val subscriber: (ArrayList<User>) -> Unit = { users ->
+
+        userPositionsChanged.clear()
+        (users zip usersDisplayed).forEachIndexed { index, (new, old) ->
+            if (new != old) userPositionsChanged.add(index)
+        }
+
+        val oldSize = usersDisplayed.size
+        val numUsersInserted = users.size - oldSize
+
         usersDisplayed.clear()
         usersDisplayed.addAll(users)
 
-        notifyDataSetChanged()
+        userPositionsChanged.forEach { notifyItemChanged(it) }
+        if (numUsersInserted > 0) notifyItemRangeInserted(oldSize, numUsersInserted)
+        if (numUsersInserted < 0) notifyItemRangeRemoved(oldSize, abs(numUsersInserted))
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
